@@ -1,3 +1,5 @@
+require 'json'
+
 $node_count = 0
 
 class Edge
@@ -7,6 +9,16 @@ class Edge
     @char = char
     @before_node = before_node
     @next_node = next_node
+  end
+
+  def toHash
+    data = {
+      'char' => @char,
+      'before_node' => @before_node.node_number,
+      'next_node' => @next_node.node_number
+    }
+
+    return data
   end
 end
 
@@ -19,6 +31,23 @@ class Node
     @word = ""
     @failure_node = nil
     @is_root = false
+  end
+
+  def toHash
+    tmp_hash = {}
+    @edge_map.each do |key, value|
+      tmp_hash[key] = value.toHash
+    end
+
+    data = {
+      "id" => @node_number,
+      "word" => @word,
+      "edge" => tmp_hash,
+      "is_root" => @is_root,
+      "failure_node" => @failure_node ? @failure_node.node_number : 0
+    }
+
+    return data
   end
 
   def addEdge edge
@@ -51,38 +80,6 @@ class Node
   end
 
   def printWord
-    # print @node_number, ": "
-    # getEdges.each do |edge|
-    #   print edge.char , ", "
-    # end
-    # number = @failure_node ? @failure_node.node_number : 0
-    # print " failure: ", number
-    # puts ""
-    #
-    if @word != ""
-      puts @word
-    end
-
-
-    if @edge_map.empty?
-      return
-    end
-
-    @edge_map.each_value do |edge|
-      if edge.next_node
-        edge.next_node.printWord
-      end
-    end
-  end
-
-  def printWord
-    # print @node_number, ": "
-    # getEdges.each do |edge|
-    #   print edge.char , ", "
-    # end
-    # number = @failure_node ? @failure_node.node_number : 0
-    # print " failure: ", number
-    # puts ""
     if @word != ""
       puts @word
     end
@@ -124,29 +121,36 @@ class AhoCorasick
     @root_node = Node.new
     @root_node.is_root = true
     target_word_list.each do |word|
-      before_node = @root_node
-      word.each_char do |character|
-        # 前ノードが次の文字へのエッジを持っているか確認
-        edge = before_node.getEdge(character)
-
-        # 持っていればそのままそのノードへ、持っていなければノードとエッジを追加
-        if edge != nil
-          next_node = edge.next_node
-        else
-          next_node = Node.new
-          edge = Edge.new character, before_node, next_node
-          before_node.addEdge edge
-        end
-
-        before_node = next_node
-      end
-
-      # 1ワード分終わったのでノードに対象ワードを設定する
-      before_node.word = word
+      createTrie word
     end
+
+    createFailure
   end
 
-  def bfsFailure
+private
+  def createTrie word
+    before_node = @root_node
+    word.each_char do |character|
+      # 前ノードが次の文字へのエッジを持っているか確認
+      edge = before_node.getEdge(character)
+
+      # 持っていればそのままそのノードへ、持っていなければノードとエッジを追加
+      if edge != nil
+        next_node = edge.next_node
+      else
+        next_node = Node.new
+        edge = Edge.new character, before_node, next_node
+        before_node.addEdge edge
+      end
+
+      before_node = next_node
+    end
+
+    # 1ワード分終わったのでノードに対象ワードを設定する
+    before_node.word = word
+  end
+
+  def createFailure
     queue = []
     # ひとまずrootから最初にたどる場所はrootを保存
     @root_node.getEdges.each do |edge|
@@ -192,6 +196,7 @@ class AhoCorasick
     end
   end
 
+public
   def PrintTri
     @root_node.printWord
   end
@@ -199,9 +204,37 @@ class AhoCorasick
   def PrintDebug
     @root_node.printDebug
   end
+
+  def Save
+    hash = {}
+    hash[@root_node.node_number] = @root_node.toHash
+
+    queue = @root_node.getEdges
+    while queue.length > 0
+      edge = queue.shift
+      node = edge.next_node
+      hash[node.node_number] = node.toHash
+      node.getEdges.each do |next_edge|
+        queue << next_edge
+      end
+    end
+
+    # str = JSON.pretty_generate(hash)
+    open('./text.json', 'w') do |io|
+      JSON.dump(hash, io)
+    end
+  end
+
+  def Load
+    json_data = open('./text.json') do |io|
+      JSON.load(io)
+    end
+
+    p json_data
+  end
 end
 
 ahoCorasick = AhoCorasick.new 'home', 'me', 'ome', 'megane', 'cache'
-ahoCorasick.bfsFailure
 ahoCorasick.PrintTri
-ahoCorasick.PrintDebug
+ahoCorasick.Save
+ahoCorasick.Load
