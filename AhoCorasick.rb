@@ -24,9 +24,8 @@ end
 
 class Node
   attr_accessor :word, :is_root, :node_number
-  def initialize
-    @node_number = $node_count
-    $node_count += 1
+  def initialize node_count
+    @node_number = node_count
     @edge_map = {}
     @word = ""
     @failure_node = nil
@@ -117,14 +116,10 @@ class Node
 end
 
 class AhoCorasick
-  def initialize (*target_word_list)
-    @root_node = Node.new
+  def initialize
+    @root_node = Node.new $node_count
+    $node_count += 1
     @root_node.is_root = true
-    target_word_list.each do |word|
-      createTrie word
-    end
-
-    createFailure
   end
 
 private
@@ -138,7 +133,8 @@ private
       if edge != nil
         next_node = edge.next_node
       else
-        next_node = Node.new
+        next_node = Node.new $node_count
+        $node_count += 1
         edge = Edge.new character, before_node, next_node
         before_node.addEdge edge
       end
@@ -197,6 +193,14 @@ private
   end
 
 public
+  def Build(*target_word_list)
+    target_word_list.each do |word|
+      createTrie word
+    end
+
+    createFailure
+  end
+
   def PrintTri
     @root_node.printWord
   end
@@ -230,11 +234,28 @@ public
       JSON.load(io)
     end
 
-    p json_data
+    json_data["0"]["edge"].each do |char, value|
+      next_node = Node.new value["next_node"]
+      edge = Edge.new char, @root_node, next_node
+      @root_node.addEdge edge
+    end
+
+    json_data.delete("0")
+
+    json_data.each do |node_number, value|
+      # node = Node.new
+      # value["edge"].each do |char, value|
+      #   edge = Edge.new char,
+      # end
+
+      puts node_number
+      p value
+    end
   end
 end
 
-ahoCorasick = AhoCorasick.new 'home', 'me', 'ome', 'megane', 'cache'
+ahoCorasick = AhoCorasick.new
+ahoCorasick.Build 'home', 'me', 'ome', 'megane', 'cache'
 ahoCorasick.PrintTri
 ahoCorasick.Save
 ahoCorasick.Load
