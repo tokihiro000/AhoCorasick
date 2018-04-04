@@ -96,6 +96,7 @@ class Node
 
   def printDebug
     print @node_number, ": "
+    print "  [edge]:"
     getEdges.each do |edge|
       print edge.char , ", "
     end
@@ -243,6 +244,7 @@ public
       edge = Edge.new char, @root_node, next_node
       @root_node.addEdge edge
     end
+    @root_node.addFailureNode nil
 
     json_data.delete("0")
 
@@ -259,16 +261,63 @@ public
         next_node_number = edge_value["next_node"]
         next_node = Node.new next_node_number
         tmp_node_map[next_node_number] = next_node
-
         edge = Edge.new char, node, next_node
         node.addEdge edge
       end
     end
+
+    json_data.each do |node_number, value|
+      target_node = tmp_node_map[node_number]
+      failure_node_number = value["failure_node"]
+      if value["word"].length != 0
+        target_node.word = value["word"]
+      end
+
+      if failure_node_number == 0
+        target_node.addFailureNode @root_node
+      else
+        target_node.addFailureNode tmp_node_map[failure_node_number]
+      end
+    end
+  end
+
+  def Search target
+    # search_node = @root_node
+    #
+    # index = i = 0
+    # length = target.length
+    # while i < length
+    #   char = target[i]
+    #   while true do
+    #     result = search_node.getEdge char
+    #     if search_node.node_number == 0 && result == nil
+    #       index += 1
+    #       i = index
+    #       puts "探索終了"
+    #       break
+    #     end
+    #
+    #     if result == nil
+    #       search_node = search_node.failureNode
+    #       if search_node.word.length !=0
+    #         puts search_node.word
+    #       end
+    #     else
+    #       search_node = result.next_node
+    #       if search_node.word.length !=0
+    #         puts search_node.word
+    #       end
+    #       i += 1
+    #       break
+    #     end
+    #   end
+    # end
   end
 end
 
 ahoCorasick = AhoCorasick.new
-ahoCorasick.Build 'home', 'me', 'ome', 'megane', 'cache'
-ahoCorasick.PrintTri
-ahoCorasick.Save
-ahoCorasick.Load
+ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde'
+# ahoCorasick.PrintTri
+# ahoCorasick.Save
+# ahoCorasick.Load
+ahoCorasick.Search "xbabcdex"
