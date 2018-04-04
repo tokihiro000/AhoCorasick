@@ -234,8 +234,12 @@ public
       JSON.load(io)
     end
 
+    tmp_node_map = {}
     json_data["0"]["edge"].each do |char, value|
-      next_node = Node.new value["next_node"]
+      next_node_number = value["next_node"]
+      next_node = Node.new next_node_number
+      tmp_node_map[next_node_number] = next_node
+
       edge = Edge.new char, @root_node, next_node
       @root_node.addEdge edge
     end
@@ -243,13 +247,22 @@ public
     json_data.delete("0")
 
     json_data.each do |node_number, value|
-      # node = Node.new
-      # value["edge"].each do |char, value|
-      #   edge = Edge.new char,
-      # end
+      node = nil
+      if tmp_node_map.has_key? node_number
+        node = tmp_node_map[node_number]
+      else
+        node = Node.new node_number
+        tmp_node_map[node_number] = node
+      end
 
-      puts node_number
-      p value
+      value["edge"].each do |char, edge_value|
+        next_node_number = edge_value["next_node"]
+        next_node = Node.new next_node_number
+        tmp_node_map[next_node_number] = next_node
+
+        edge = Edge.new char, node, next_node
+        node.addEdge edge
+      end
     end
   end
 end
