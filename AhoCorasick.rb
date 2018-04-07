@@ -203,6 +203,16 @@ public
     createFailure
   end
 
+  def BuildFromFile(file_name)
+    File.open(file_name) do |file|
+      file.each_line do |str|
+        str.chomp!
+        createTrie str
+      end
+    end
+    createFailure
+  end
+
   def PrintTri
     @root_node.printWord
   end
@@ -291,7 +301,6 @@ public
     while index < length
       char = target[index]
       while true do
-        result_set.add search_node.word
         result = search_node.getEdge char
 
         # 探索終了
@@ -303,9 +312,11 @@ public
         # エッジがないなら探索失敗 -> 失敗時リンクを辿る
         if result == nil
           search_node = search_node.failureNode
+          result_set.add search_node.word
         else
           search_node = result.next_node
           tmp_node = search_node.failureNode
+          result_set.add search_node.word
           result_set.add tmp_node.word
           index += 1
           break
@@ -318,9 +329,15 @@ public
 end
 
 ahoCorasick = AhoCorasick.new
-ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde'
+# ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde', "zr"
+ahoCorasick.BuildFromFile 'number.txt'
 # ahoCorasick.PrintTri
 # ahoCorasick.Save
-# ahoCorasick.Load
-p ahoCorasick.Search "xbabcdex"
-# p ahoCorasick.Search "abcd"
+now1 = Time.new;
+p now1
+ahoCorasick.Load
+now2 = Time.new;
+p now2
+p ahoCorasick.Search "1000000"
+now3 = Time.new;
+p now3
