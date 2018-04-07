@@ -1,4 +1,5 @@
 require 'json'
+require 'set'
 
 $node_count = 0
 
@@ -282,36 +283,37 @@ public
   end
 
   def Search target
-    # search_node = @root_node
-    #
-    # index = i = 0
-    # length = target.length
-    # while i < length
-    #   char = target[i]
-    #   while true do
-    #     result = search_node.getEdge char
-    #     if search_node.node_number == 0 && result == nil
-    #       index += 1
-    #       i = index
-    #       puts "探索終了"
-    #       break
-    #     end
-    #
-    #     if result == nil
-    #       search_node = search_node.failureNode
-    #       if search_node.word.length !=0
-    #         puts search_node.word
-    #       end
-    #     else
-    #       search_node = result.next_node
-    #       if search_node.word.length !=0
-    #         puts search_node.word
-    #       end
-    #       i += 1
-    #       break
-    #     end
-    #   end
-    # end
+    result_set = Set.new
+    search_node = @root_node
+
+    index = 0
+    length = target.length
+    while index < length
+      char = target[index]
+      while true do
+        result_set.add search_node.word
+        result = search_node.getEdge char
+
+        # 探索終了
+        if search_node.node_number == 0 && result == nil
+          index += 1
+          break
+        end
+
+        # エッジがないなら探索失敗 -> 失敗時リンクを辿る
+        if result == nil
+          search_node = search_node.failureNode
+        else
+          search_node = result.next_node
+          tmp_node = search_node.failureNode
+          result_set.add tmp_node.word
+          index += 1
+          break
+        end
+      end
+    end
+
+    return result_set
   end
 end
 
@@ -320,4 +322,5 @@ ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde'
 # ahoCorasick.PrintTri
 # ahoCorasick.Save
 # ahoCorasick.Load
-ahoCorasick.Search "xbabcdex"
+p ahoCorasick.Search "xbabcdex"
+# p ahoCorasick.Search "abcd"
