@@ -24,13 +24,14 @@ class Edge
 end
 
 class Node
-  attr_accessor :word, :is_root, :node_number
+  attr_accessor :word, :is_root, :node_number, :union_word_set
   def initialize node_count
     @node_number = node_count
     @edge_map = {}
     @word = ""
     @failure_node = nil
     @is_root = false
+    @union_word_set = Set.new
   end
 
   def toHash
@@ -71,7 +72,7 @@ class Node
     return @edge_map.values
   end
 
-  def addFailureNode node
+  def LinkFailureNode node
     @failure_node = node
   end
 
@@ -152,7 +153,7 @@ private
     queue = []
     # ひとまずrootから最初にたどる場所はrootを保存
     @root_node.getEdges.each do |edge|
-      edge.next_node.addFailureNode @root_node
+      edge.next_node.LinkFailureNode @root_node
       queue << edge.next_node
     end
 
@@ -185,9 +186,13 @@ private
 
         # 探索失敗ならルートへリンク、そうでなければ探索結果を保存
         if edge2 == nil
-          next_node.addFailureNode @root_node
+          next_node.LinkFailureNode @root_node
         else
-          next_node.addFailureNode edge2.next_node
+          next_node.LinkFailureNode edge2.next_node
+          next_node.union_word_set.add edge2.next_node.word
+          edge2.next_node.union_word_set.each do |word|
+            next_node.union_word_set.add word
+          end
         end
         queue << next_node
       end
@@ -255,7 +260,7 @@ public
       edge = Edge.new char, @root_node, next_node
       @root_node.addEdge edge
     end
-    @root_node.addFailureNode nil
+    @root_node.LinkFailureNode nil
 
     json_data.delete("0")
 
@@ -285,9 +290,13 @@ public
       end
 
       if failure_node_number == 0
-        target_node.addFailureNode @root_node
+        target_node.LinkFailureNode @root_node
       else
-        target_node.addFailureNode tmp_node_map[failure_node_number]
+        target_node.LinkFailureNode tmp_node_map[failure_node_number]
+        target_node.union_word_set.add tmp_node_map[failure_node_number].word
+        tmp_node_map[failure_node_number].union_word_set.each do |word|
+          target_node.union_word_set.add word
+        end
       end
     end
   end
@@ -301,23 +310,24 @@ public
     while index < length
       char = target[index]
       while true do
-        result = search_node.getEdge char
+        edge = search_node.getEdge char
 
         # 探索終了
-        if search_node.node_number == 0 && result == nil
+        if search_node.node_number == 0 && edge == nil
           index += 1
           break
         end
 
         # エッジがないなら探索失敗 -> 失敗時リンクを辿る
-        if result == nil
+        if edge == nil
           search_node = search_node.failureNode
-          result_set.add search_node.word
+          # result_set.add search_node.word
         else
-          search_node = result.next_node
-          tmp_node = search_node.failureNode
+          search_node = edge.next_node
           result_set.add search_node.word
-          result_set.add tmp_node.word
+          search_node.union_word_set.each do |word|
+            result_set.add word
+          end
           index += 1
           break
         end
@@ -329,15 +339,21 @@ public
 end
 
 ahoCorasick = AhoCorasick.new
-# ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde', "zr"
-ahoCorasick.BuildFromFile 'number.txt'
+# ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde'
+ahoCorasick.BuildFromFile 'input.txt'
 # ahoCorasick.PrintTri
 # ahoCorasick.Save
-now1 = Time.new;
-p now1
-ahoCorasick.Load
-now2 = Time.new;
-p now2
-p ahoCorasick.Search "1000000"
-now3 = Time.new;
-p now3
+# now1 = Time.new;
+# p now1
+# ahoCorasick.Load
+# now2 = Time.new;
+# p now2
+p ahoCorasick.Search "abduction"
+# now3 = Time.new;
+# p now3
+# ahoCorasick.PrintTri
+
+STDIN.each_line do |line|
+  input_word = line.chomp
+  p ahoCorasick.Search input_word
+end
