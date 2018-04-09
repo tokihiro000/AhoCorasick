@@ -195,8 +195,13 @@ public
   end
 
   def BuildFromFile(file_name)
+    count = 0
     File.open(file_name) do |file|
       file.each_line do |str|
+        count += 1
+        if count % 100000 == 0
+          print "now_count: ", count, "\n"
+        end
         str.chomp!
         createTrie str
       end
@@ -326,8 +331,8 @@ ahoCorasick = AhoCorasick.new
 # ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde'
 ahoCorasick.BuildFromFile 'number.txt'
 # ahoCorasick.PrintTri
-ahoCorasick.Save
-# now1 = Time.new;
+# ahoCorasick.Save
+# now1 = Time.ne  w;
 # p now1
 # ahoCorasick.Load
 # now2 = Time.new;
