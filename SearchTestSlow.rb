@@ -1,4 +1,4 @@
-require_relative './AhoCorasick.rb'
+require_relative './split_str.rb'
 
 str_map = {}
 while str_map.length < 1000
@@ -32,6 +32,7 @@ file_name_list = [
 
 search_str_list = []
 file_name_list.each do |file_name|
+  count = 0
   File.open(file_name) do |file|
     file.each_line do |str|
       count += 1
@@ -43,12 +44,32 @@ file_name_list.each do |file_name|
     end
   end
 
+  search_str_list.sort!
+  search_time = 0
   str_list.each do |str|
-    if search_str_list.include? str
-      puts str
+    set = GetStrSet str
+    set.each do |search_str|
+      t1 = Time.new
+      # 愚直線形
+      # search_str_list.each do |s|
+      #   if s == search_str
+      #     break
+      #   end
+      # end
+
+      # 実装見た感じ多分線形
+      # search_str_list.include? search_str
+
+      # 2分探索
+      search_str_list.bsearch { |s| search_str <=> s }
+
+      t2 = Time.new
+      time = (t2.usec - t1.usec)
+      time =  0 > time ? 0 : time
+      search_time += time
     end
   end
 
   puts file_name
-  print "平均検索時間:\n"
+  print "平均検索時間:",  (search_time / 1000), "μs\n"
 end
