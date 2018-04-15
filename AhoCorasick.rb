@@ -115,6 +115,8 @@ class AhoCorasick
     @root_node = Node.new $node_count
     $node_count += 1
     @root_node.is_root = true
+    @search_time = 0
+    @search_count = 0
   end
 
 private
@@ -322,14 +324,23 @@ public
     end
 
     t2 = Time.new
-    print "検索時間: ", (t2.usec - t1.usec), "マイクロ秒\n"
+    time = (t2.usec - t1.usec)
+    time =  0 > time ? 0 : time
+
+    @search_time = @search_time + time
+    @search_count += 1
     return result_set
+  end
+
+  def GetAverageSearchTime
+    print "検索時間: ", @search_time, "マイクロ秒,  検索回数", @search_count, "\n"
+    return @search_time / @search_count
   end
 end
 
-ahoCorasick = AhoCorasick.new
+# $ahoCorasick = AhoCorasick.new
 # ahoCorasick.Build 'ab', 'bc', 'bab', 'd', 'abcde'
-ahoCorasick.BuildFromFile 'number.txt'
+# $ahoCorasick.BuildFromFile 'alphabet.txt'
 # ahoCorasick.PrintTri
 # ahoCorasick.Save
 # now1 = Time.ne  w;
@@ -337,13 +348,12 @@ ahoCorasick.BuildFromFile 'number.txt'
 # ahoCorasick.Load
 # now2 = Time.new;
 # p now2
-p ahoCorasick.Search "abduction"
+# p ahoCorasick.Search "abduction"
 # now3 = Time.new;
 # p now3
-# ahoCorasick.PrintTri
 
-STDIN.each_line do |line|
-  input_word = line.chomp
-  print "\nsearch word ---> [", input_word, "]\n"
-  p ahoCorasick.Search input_word
-end
+# STDIN.each_line do |line|
+#   input_word = line.chomp
+#   print "\nsearch word ---> [", input_word, "]\n"
+#   p ahoCorasick.Search input_word
+# end
