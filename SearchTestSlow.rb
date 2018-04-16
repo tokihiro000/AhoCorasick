@@ -6,12 +6,12 @@ file_name_list = [
   'alphabet_1000000.txt'
 ]
 
-search_str_list = []
-file_name_list.each do |file_name|
+def SearchTest file_name
+  search_str_list = []
   # ランダムな文字列生成
-  # str_list = GetRandomStr 1000, 12
+  str_list = GetRandomStr 1000, 12
   # 見つかることが確定している文字列
-  str_list = GetExistStr 1000, file_name
+  # str_list = GetExistStr 1000, file_name
 
   count = 0
   File.open(file_name) do |file|
@@ -39,10 +39,10 @@ file_name_list.each do |file_name|
       # end
 
       # 実装見た感じ多分線形
-      # search_str_list.include? search_str
+      search_str_list.include? search_str
 
       # 2分探索
-      search_str_list.bsearch { |s| search_str <=> s }
+      # search_str_list.bsearch { |s| search_str <=> s }
 
       t2 = Time.new
       time = (t2.usec - t1.usec)
@@ -53,4 +53,8 @@ file_name_list.each do |file_name|
 
   puts file_name
   print "平均検索時間: ",  (search_time / 1000), "μs\n"
+end
+
+if $0 == __FILE__
+  SearchTest ARGV[0]
 end
