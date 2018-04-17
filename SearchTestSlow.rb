@@ -9,7 +9,7 @@ file_name_list = [
 def SearchTest file_name
   search_str_list = []
   # ランダムな文字列生成
-  str_list = GetRandomStr 1000, 12
+  str_list = GetRandomStr 100, 200
   # 見つかることが確定している文字列
   # str_list = GetExistStr 1000, file_name
 
@@ -39,10 +39,10 @@ def SearchTest file_name
       # end
 
       # 実装見た感じ多分線形
-      search_str_list.include? search_str
+      # search_str_list.include? search_str
 
       # 2分探索
-      # search_str_list.bsearch { |s| search_str <=> s }
+      search_str_list.bsearch { |s| search_str <=> s }
 
       t2 = Time.new
       time = (t2.usec - t1.usec)

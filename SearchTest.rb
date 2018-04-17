@@ -10,14 +10,14 @@ file_name_list = [
 def SearchTest file_name
 # file_name_list.each do |file_name|
   # ランダムな文字列生成
-  # str_list = GetRandomStr 1000, 12
+  str_list = GetRandomStr 100, 200
   # 見つかることが確定している文字列
-  str_list = GetExistStr 1000, file_name
+  # str_list = GetExistStr 1000, file_name
 
   ahoCorasick = AhoCorasick.new
   ahoCorasick.BuildFromFile file_name
   str_list.each do |str|
-    ahoCorasick.Search str
+    p ahoCorasick.Search str
   end
 
   puts file_name

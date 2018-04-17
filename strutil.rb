@@ -19,12 +19,7 @@ def GetRandomStr count, str_length
   str_map = {}
   short_length = str_length / 2
   more_short_length = str_length / 3
-  div_ten_count = count / 10
   while str_map.length < count
-    if str_map.length % div_ten_count == 0
-      puts str_map.length
-    end
-
     str = (0...str_length).map{ ('A'..'Z').to_a[rand(26)] }.join
     str_map[str] = 0
 
